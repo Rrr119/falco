@@ -34,6 +34,8 @@ If you're new to Falco, begin your journey with our [Getting Started](https://fa
 
 As final recommendations before deploying Falco, verify environment compatibility, define your detection goals, optimize performance, choose the appropriate build, and plan for SIEM or data lake integration to ensure effective incident response.
 
+For eBPF-specific event routing and rules, see [eBPF Event Source](docs/ebpf-event-source.md).
+
 ### Demo Environment
 
 A demo environment is provided via a docker-compose file that can be started on a docker host which includes falco, falcosidekick, falcosidekick-ui and its required redis database. For more information see the [docker-compose section](docker/docker-compose/)

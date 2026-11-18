@@ -1,0 +1,26 @@
+# SPDX-License-Identifier: Apache-2.0
+#
+# Copyright (C) 2026 The Falco Authors.
+#
+# This file is installed under /etc/falco/rules.d and loaded together with the
+# regular Falco rules. The `ebpf` source is a logical source over BPF syscall
+# events collected by the syscall inspector.
+
+- list: ebpf_trusted_loader_processes
+  items: [falco, falcoctl, bpftool, systemd, systemctl]
+
+- rule: eBPF Program Loaded in Container
+  desc: >
+    Detects a containerized process loading an eBPF program. Loading eBPF
+    programs inside a container can indicate kernel instrumentation, privilege
+    escalation, or persistence attempts. Security agents that are expected to
+    load programs can be added to ebpf_trusted_loader_processes.
+  condition: >
+    evt.type=bpf
+    and (evt.arg.cmd=BPF_PROG_LOAD or evt.arg.cmd=5)
+    and container.id != host
+    and not proc.name in (ebpf_trusted_loader_processes)
+  output: eBPF program loaded in container | evt_type=%evt.type bpf_cmd=%evt.arg.cmd user=%user.name user_uid=%user.uid user_loginuid=%user.loginuid process=%proc.name proc_exepath=%proc.exepath parent=%proc.pname command=%proc.cmdline container_id=%container.id container_name=%container.name image=%container.image.repository
+  priority: WARNING
+  source: ebpf
+  tags: [maturity_incubating, container, mitre_persistence, TA0003]

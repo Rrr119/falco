@@ -758,7 +758,8 @@ void falco_engine::get_json_evt_types(nlohmann::json &out,
                                       libsinsp::filter::ast::expr *ast) const {
 	// note: this duplicates part of the logic of evttype_index_ruleset,
 	// not good but it's our best option for now
-	if(source.empty() || source == falco_common::syscall_source) {
+	if(source.empty() || source == falco_common::syscall_source ||
+	   source == falco_common::ebpf_source) {
 		auto evtcodes = libsinsp::filter::ast::ppm_event_codes(ast);
 		evtcodes.insert(ppm_event_code::PPME_ASYNCEVENT_E);
 		auto syscodes = libsinsp::filter::ast::ppm_sc_codes(ast);

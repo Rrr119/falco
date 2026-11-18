@@ -22,6 +22,25 @@ static std::vector<std::string> priority_names =
 
 static std::vector<std::string> rule_matching_names = {"first", "all"};
 
+libsinsp::events::set<ppm_event_code> falco_common::ebpf_event_codes() {
+	return {PPME_SYSCALL_BPF_E,
+	        PPME_SYSCALL_BPF_X,
+	        PPME_SYSCALL_BPF_2_E,
+	        PPME_SYSCALL_BPF_2_X};
+}
+
+bool falco_common::is_ebpf_event(uint16_t event_type) {
+	switch(event_type) {
+	case PPME_SYSCALL_BPF_E:
+	case PPME_SYSCALL_BPF_X:
+	case PPME_SYSCALL_BPF_2_E:
+	case PPME_SYSCALL_BPF_2_X:
+		return true;
+	default:
+		return false;
+	}
+}
+
 bool falco_common::parse_priority(const std::string& v, priority_type& out) {
 	for(size_t i = 0; i < priority_names.size(); i++) {
 		// note: for legacy reasons, "Info" and "Informational" has been used

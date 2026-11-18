@@ -1,0 +1,23 @@
+# falco-rules-5.2.0
+
+tests:
+  - name: ebpf_program_loaded_in_container
+    rule: "eBPF Program Loaded in Container"
+    description: "loading a BPF program inside a container fires the eBPF source rule"
+    runner: HostRunner
+    context:
+      container: {}
+      processes:
+        - name: eg_bpf_loader
+    steps:
+      - type: syscall
+        name: load_program
+        syscall: bpf
+        args:
+          cmd: BPF_PROG_LOAD
+    expectedOutcome:
+      source: ebpf
+      priority: warning
+      outputFields:
+        proc.name: eg_bpf_loader
+        evt.arg.cmd: BPF_PROG_LOAD

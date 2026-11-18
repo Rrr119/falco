@@ -45,6 +45,15 @@ struct falco_exception : std::runtime_error {
 namespace falco_common {
 
 const std::string syscall_source = sinsp_syscall_event_source_name;
+// Logical event source for BPF syscall events. These events are collected by
+// the syscall inspector, but exposing a dedicated source lets eBPF-specific
+// rules run independently from the general syscall ruleset.
+const std::string ebpf_source = "ebpf";
+
+// All event types that belong to the eBPF event source, across both the
+// legacy (BPF_E/X) and the current (BPF_2_E/X) event ABI.
+libsinsp::events::set<ppm_event_code> ebpf_event_codes();
+bool is_ebpf_event(uint16_t event_type);
 
 // Same as numbers/indices into the above vector
 enum priority_type {

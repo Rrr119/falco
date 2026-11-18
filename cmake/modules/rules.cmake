@@ -92,4 +92,12 @@ else() # Default Falco installation
 		DESTINATION "${FALCO_ETC_DIR}/rules.d"
 		COMPONENT "${FALCO_COMPONENT_NAME}"
 	)
+
+	if(NOT WIN32 AND NOT APPLE AND NOT EMSCRIPTEN)
+		install(
+			FILES "${PROJECT_SOURCE_DIR}/config/falco-ebpf_rules.yaml"
+			DESTINATION "${FALCO_ETC_DIR}/rules.d"
+			COMPONENT "${FALCO_COMPONENT_NAME}"
+		)
+	endif()
 endif()

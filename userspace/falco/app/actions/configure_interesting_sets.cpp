@@ -282,6 +282,10 @@ falco::app::run_result falco::app::actions::configure_interesting_sets(falco::ap
 	 * inspector to instruct the kernel drivers on which kernel event should
 	 * be collected at runtime. */
 	auto rules_sc_set = s.engine->sc_codes_for_ruleset(falco_common::syscall_source);
+	if(s.engine->is_source_valid(falco_common::ebpf_source)) {
+		rules_sc_set = rules_sc_set.merge(
+		        s.engine->sc_codes_for_ruleset(falco_common::ebpf_source));
+	}
 	select_event_set(s, rules_sc_set);
 	check_for_rules_unsupported_events(s, rules_sc_set);
 

@@ -33,7 +33,8 @@ void evttype_index_ruleset::add(const falco_rule &rule,
 		auto wrap = std::make_shared<evttype_index_wrapper>();
 		wrap->m_rule = rule;
 		wrap->m_filter = filter;
-		if(rule.source == falco_common::syscall_source) {
+		if(rule.source == falco_common::syscall_source ||
+		   rule.source == falco_common::ebpf_source) {
 			wrap->m_sc_codes = libsinsp::filter::ast::ppm_sc_codes(condition.get());
 			wrap->m_event_codes = libsinsp::filter::ast::ppm_event_codes(condition.get());
 		} else {

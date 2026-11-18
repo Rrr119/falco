@@ -36,6 +36,13 @@ falco::app::run_result falco::app::actions::load_plugins(falco::app::state& s) {
 	s.source_infos.insert(syscall_src_info, falco_common::syscall_source);
 	s.loaded_sources = {falco_common::syscall_source};
 
+	// The eBPF source is a logical view over BPF events collected by the
+	// syscall inspector. It is initialized unconditionally, but it is not an
+	// independently opened event source.
+	state::source_info ebpf_src_info;
+	ebpf_src_info.filterchecks = std::make_shared<sinsp_filter_check_list>();
+	s.source_infos.insert(ebpf_src_info, falco_common::ebpf_source);
+
 	// Initialize map of plugin configs
 	s.plugin_configs.clear();
 

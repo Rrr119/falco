@@ -343,10 +343,15 @@ static falco::app::run_result do_inspect(
 		// engine, which will match the event against the set
 		// of rules. If a match is found, pass the event to
 		// the outputs.
-		auto res = s.engine->process_event(source_engine_idx, ev, s.config->m_rule_matching);
-		if(res != nullptr) {
-			auto capture = s.config->m_capture_enabled &&
-			               capture_mode_t::ALL_RULES == s.config->m_capture_mode;
+		bool capture = s.config->m_capture_enabled &&
+		               capture_mode_t::ALL_RULES == s.config->m_capture_mode;
+		auto process_source = [&](size_t engine_idx) {
+			auto res =
+			        s.engine->process_event(engine_idx, ev, s.config->m_rule_matching);
+			if(res == nullptr) {
+				return false;
+			}
+
 			for(auto& rule_res : *res) {
 				// Process output
 				s.outputs->handle_event(rule_res.evt,
@@ -374,17 +379,34 @@ static falco::app::run_result do_inspect(
 					}
 				}
 			}
+			return true;
+		};
 
-			// When a rule matches or we are in all_rules mode, we start a dump (if not in progress
-			// yet)
-			if(capture && dump_started_ts == 0) {
-				dumper->open(inspector.get(),
-				             generate_scap_file_path(s.config->m_capture_path_prefix,
-				                                     ev->get_ts(),
-				                                     ev->get_num()),
-				             true);  // Enable compression
-				dump_started_ts = ev->get_ts();
-			}
+		bool matched = process_source(source_engine_idx);
+
+		// BPF syscall events are collected by the syscall inspector. Route
+		// them through the logical eBPF source as well, without opening a
+		// second inspector or duplicating the capture stream.
+		bool event_from_syscall =
+		        is_capture_mode
+		                ? inspector->event_sources()[source_engine_idx] ==
+		                          falco_common::syscall_source
+		                : source == falco_common::syscall_source;
+		if(event_from_syscall && falco_common::is_ebpf_event(ev->get_type())) {
+			const auto ebpf_engine_idx =
+			        s.source_infos.at(falco_common::ebpf_source)->engine_idx;
+			matched = process_source(ebpf_engine_idx) || matched;
+		}
+
+		// When a rule matches or we are in all_rules mode, we start a dump (if not in progress
+		// yet)
+		if(matched && capture && dump_started_ts == 0) {
+			dumper->open(inspector.get(),
+			             generate_scap_file_path(s.config->m_capture_path_prefix,
+			                                     ev->get_ts(),
+			                                     ev->get_num()),
+			             true);  // Enable compression
+			dump_started_ts = ev->get_ts();
 		}
 
 		// Save events when a dump is in progress.

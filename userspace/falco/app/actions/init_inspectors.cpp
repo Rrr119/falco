@@ -195,6 +195,14 @@ falco::app::run_result falco::app::actions::init_inspectors(falco::app::state& s
 		}
 	}
 
+	// The eBPF source shares the syscall inspector and filter checks. This
+	// keeps a single capture thread and ensures both sources observe exactly
+	// the same events and metadata.
+	auto syscall_info = s.source_infos.at(falco_common::syscall_source);
+	auto ebpf_info = s.source_infos.at(falco_common::ebpf_source);
+	ebpf_info->inspector = syscall_info->inspector;
+	ebpf_info->filterchecks = syscall_info->filterchecks;
+
 	// check if some plugin remains unused
 	for(const auto& p : all_plugins) {
 		if(used_plugins.find(p->name()) == used_plugins.end()) {

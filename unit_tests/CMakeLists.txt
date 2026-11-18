@@ -54,6 +54,7 @@ add_executable(
 	falco/test_configuration_env_vars.cpp
 	falco/test_configuration_output_options.cpp
 	falco/test_configuration_schema.cpp
+	falco/test_ebpf_event_source.cpp
 	falco/app/actions/test_select_event_sources.cpp
 	falco/app/actions/test_load_config.cpp
 	falco/app/actions/test_pidfile.cpp
@@ -94,6 +95,12 @@ target_include_directories(
 			${CMAKE_SOURCE_DIR}/userspace/engine # we need it to include indirectly `falco_common.h`
 			# file
 			${CMAKE_CURRENT_BINARY_DIR} # we need it to include `falco_test_var.h`
+)
+
+target_compile_definitions(
+	falco_unit_tests
+	PRIVATE
+		TEST_FALCO_EBPF_RULES_FILE="${PROJECT_SOURCE_DIR}/config/falco-ebpf_rules.yaml"
 )
 
 get_target_property(FALCO_APPLICATION_LIBRARIES falco_application LINK_LIBRARIES)

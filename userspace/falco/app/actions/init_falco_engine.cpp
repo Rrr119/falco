@@ -131,6 +131,11 @@ falco::app::run_result falco::app::actions::init_falco_engine(falco::app::state&
 		}
 	}
 
+	// Add the logical eBPF source after all inspector-backed sources. It
+	// shares the syscall inspector but has its own ruleset, so eBPF rules can
+	// be enabled and matched independently.
+	add_source_to_engine(s, falco_common::ebpf_source);
+
 	// note: in replay mode, we can assume that the plugin source index will
 	// be the same in both the falco engine and the sinsp plugin manager.
 	// This assumption stands because the plugin manager stores sources in a
